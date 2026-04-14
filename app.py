@@ -131,10 +131,13 @@ def explain_risk(diabetes_input, heart_input, d_prob, h_prob):
 
 
 # Load models
-diabetes_model = joblib.load("diabetes_model.pkl")
-scaler = joblib.load("scaler.pkl")
-heart_model = joblib.load("heart_model.pkl")
-heart_columns = joblib.load("heart_columns.pkl")
+import os
+BASE_DIR = os.path.dirname(__file__)
+
+diabetes_model = joblib.load(os.path.join(BASE_DIR, "diabetes_model.pkl"))
+scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
+heart_model = joblib.load(os.path.join(BASE_DIR, "heart_model.pkl"))
+heart_columns = joblib.load(os.path.join(BASE_DIR, "heart_columns.pkl"))
 
 st.set_page_config(page_title="Health AI Predictor", layout="wide")
 
@@ -317,18 +320,26 @@ if st.button("🔍 Predict"):
 
     # ------------------ CHART ------------------
 
-    import matplotlib.pyplot as plt
-
-    labels = ['Diabetes', 'Heart']
-    values = [d_prob, h_prob]
-
-    fig, ax = plt.subplots(figsize=(4, 3))  # 👈 smaller size
-    ax.bar(labels, values)
-    ax.set_ylim(0, 1)
-    ax.set_ylabel("Risk Prob")
-    ax.set_title("Risk Comparison")
-
-    st.pyplot(fig)
+    st.subheader("📊 Risk Comparison")
+    
+    fig = go.Figure()
+    
+    fig.add_trace(go.Bar(
+        x=["Diabetes", "Heart"],
+        y=[d_prob * 100, h_prob * 100],
+        text=[f"{d_prob*100:.1f}%", f"{h_prob*100:.1f}%"],
+        textposition='auto'
+    ))
+    
+    fig.update_layout(
+        height=350,
+        margin=dict(l=20, r=20, t=30, b=20),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="white"),
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
 
     # ------------------ SUGGESTIONS ------------------
 
